@@ -1,0 +1,35 @@
+version: "3.9"
+
+services:
+
+  api:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/api.Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+      - postgres
+
+  worker:
+    build:
+      context: ../..
+      dockerfile: infrastructure/docker/worker.Dockerfile
+    environment:
+      - REDIS_HOST=redis
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7
+
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: devops
+      POSTGRES_PASSWORD: devops
+      POSTGRES_DB: devopsdb
+  
