@@ -17,7 +17,7 @@ jobs:
       run: docker build -t api-service:${{ env.TAG }} ./ai-devops-platform/services/api
 
     - name: Build Worker Image
-      run: docker build -t worker-service:${{ env.TAG }} ./services/worker
+      run: docker build -t worker-service:${{ env.TAG }} ./ai-devops-platform/services/worker
 
     - name: Show Images
       run: docker images
