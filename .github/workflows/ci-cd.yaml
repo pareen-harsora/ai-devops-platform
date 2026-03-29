@@ -14,10 +14,10 @@ jobs:
       run: echo "TAG=${{ github.run_number }}" >> $GITHUB_ENV
 
     - name: Build API Image
-      run: docker build -t api-service:${{ env.TAG }} ./ai-devops-platform/services/api
+      run: docker build -t api-service:${{ env.TAG }} ./services/api
 
     - name: Build Worker Image
-      run: docker build -t worker-service:${{ env.TAG }} ./ai-devops-platform/services/worker
+      run: docker build -t worker-service:${{ env.TAG }} ./services/worker
 
     - name: Show Images
       run: docker images
