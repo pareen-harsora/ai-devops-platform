@@ -8,13 +8,16 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
+    - name: Set Image Tag
+      id: vars
+      run: echo "TAG=${{ github.run_number }}" >> $GITHUB_ENV
 
-    - name: Build API Docker Image
-      run: docker build -t api-service ./services/api
+    - name: Build API Image
+      run: docker build -t api-service:${{ env.TAG }} ./services/api
 
-    - name: Build Worker Docker Image
-      run: docker build -t worker-service ./services/worker
+    - name: Build Worker Image
+      run: docker build -t worker-service:${{ env.TAG }} ./services/worker
+
+    - name: Show Images
+      run: docker images
