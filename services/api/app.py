@@ -2,6 +2,7 @@ from flask import Flask, request
 import redis
 import json
 import os
+import time
 
 app = Flask(__name__)
 
@@ -15,13 +16,14 @@ def home():
 
 @app.route("/task", methods=["POST"])
 def task():
-    data = request.json
-    r.lpush("tasks", json.dumps(data))
-    return {"message": "task queued"}
+    x = 0
+    for i in range(10**7):
+        x += i
+    return {"status": "processed"}
 
 @app.route("/health")
 def health():
-    return {"status": "healthy"}
+    return {"status": "healthy"},200
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
