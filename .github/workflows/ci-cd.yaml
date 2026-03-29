@@ -9,11 +9,8 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-    - name: Debug Repo Structure
-      run: |
-        echo "Current directory: $(pwd)"
-        echo "Contents:"
-        ls -R
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
     - name: Set Image Tag
       id: vars
