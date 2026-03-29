@@ -9,6 +9,12 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
+    - name: Debug Repo Structure
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Contents:"
+        ls -R
+
     - name: Set Image Tag
       id: vars
       run: echo "TAG=${{ github.run_number }}" >> $GITHUB_ENV
