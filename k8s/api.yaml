@@ -23,8 +23,8 @@ spec:
         - name: secret-volume
           mountPath: /etc/secrets
           readOnly: true
-        image: api-service
-        imagePullPolicy: Never
+        image: pareenharsora/ai-devops-platform-api:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 5000
         env:
