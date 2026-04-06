@@ -1,29 +1,34 @@
-from flask import Flask, request
+from flask import Flask
 import redis
-import json
-import os
 import time
+
+from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 
 app = Flask(__name__)
 
-redis_host = os.getenv("REDIS_HOST", "redis")
+# Redis connection
+r = redis.Redis(host="redis-service", port=6379)
 
-r = redis.Redis(host=redis_host, port=6379)
+# Metrics
+REQUEST_COUNT = Counter('app_requests_total', 'Total API Requests')
+REQUEST_LATENCY = Histogram('app_request_latency_seconds', 'Request latency')
 
 @app.route("/")
 def home():
-    return {"service": "api", "status": "running"}
+    REQUEST_COUNT.inc()
+    start_time = time.time()
 
-@app.route("/task", methods=["POST"])
-def task():
-    x = 0
-    for i in range(10**7):
-        x += i
-    return {"status": "processed"}
+    r.rpush("tasks", "new task")
 
-@app.route("/health")
-def health():
-    return {"status": "healthy"},200
+    latency = time.time() - start_time
+    REQUEST_LATENCY.observe(latency)
+
+    return "Task sent!"
+
+#  Metrics endpoint
+@app.route("/metrics")
+def metrics():
+    return generate_latest(), 200, {'Content-Type': CONTENT_TYPE_LATEST}
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
