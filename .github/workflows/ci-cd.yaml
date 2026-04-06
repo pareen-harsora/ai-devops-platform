@@ -1,4 +1,4 @@
-name: CI-CD Pipeline
+name: Full CI-CD Pipeline
 
 on:
   push:
@@ -6,32 +6,51 @@ on:
     - main
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
-    - name: Login to DockerHub
+
+    # 1. Checkout Code
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    # 2. Set Tag
+    - name: Set Image Tag
+      run: echo "TAG=${{ github.run_number }}" >> $GITHUB_ENV
+
+    # 3. Login to Docker Hub
+    - name: Login to Docker Hub
       uses: docker/login-action@v2
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    - name: Checkout Code
-      uses: actions/checkout@v3
 
-    - name: Set Image Tag
-      id: vars
-      run: echo "TAG=${{ github.run_number }}" >> $GITHUB_ENV
-
+    # 4. Build Images
     - name: Build API Image
       run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-api:${{ env.TAG }} ./services/api
 
     - name: Build Worker Image
       run: docker build -t ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-worker:${{ env.TAG }} ./services/worker
 
+    # 5. Push Images
     - name: Push API Image
       run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-api:${{ env.TAG }}
 
     - name: Push Worker Image
       run: docker push ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-worker:${{ env.TAG }}
 
-    - name: Show Images
-      run: docker images
+    # 6. Update Kubernetes YAML (GitOps)
+    - name: Update Kubernetes YAML
+      run: |
+        sed -i "s|image:.*ai-devops-platform-api:.*|image: ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-api:${{ env.TAG }}|g" k8s/api.yaml
+        sed -i "s|image:.*ai-devops-platform-worker:.*|image: ${{ secrets.DOCKER_USERNAME }}/ai-devops-platform-worker:${{ env.TAG }}|g" k8s/worker.yaml
+
+    # 7. Commit Changes
+    - name: Commit and Push Changes
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "actions@github.com"
+        git add k8s/
+        git commit -m "Deploy version ${{ env.TAG }}"
+        git push
